@@ -3,8 +3,11 @@ const taskInput = document.getElementById("taskInput");
 const addBtn = document.getElementById("addBtn");
 const taskList = document.getElementById("taskList");
 
-// array de tareas
-let tasks = [];
+// cargar tareas desde localStorege
+let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+// render inicial
+renderTasks();
 
 // funcion para agregar una tarea
 function addTask() {
@@ -18,27 +21,46 @@ function addTask() {
     };
 
     tasks.push(newTask);
-    renderTasks();
+    saveAndRender();
     taskInput.value = "";
+}
+
+// eliminar tarea
+function deleteTask(id) {
+    tasks = tasks.filter(t => t.id !== id);
+    saveAndRender();
+}
+
+// alternar completada/no completada
+function toggleTask(id) {
+  tasks = tasks.map(t =>
+    t.id === id ? { ...t, completed: !t.completed } : t
+  );
+  saveAndRender();
+}
+
+// guardar y renderizar tareas
+function saveAndRender() {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+    renderTasks();
 }
 
 // render de la lista de tareas
 function renderTasks() {
-    taskList.innerHTML = ""
+  taskList.innerHTML = "";
 
-    tasks.forEach( task => {
-        const li = document.createElement("li");
-        li.innerHTML = `
-            <span>${task.text}</span>        
-        `;
+  tasks.forEach(task => {
+    const li = document.createElement("li");
+    li.className = task.completed ? "completed" : "";
 
-        taskList.appendChild(li);
-    });
+    li.innerHTML = `
+      <span onclick="toggleTask(${task.id})">${task.text}</span>
+      <button onclick="deleteTask(${task.id})">X</button>
+    `;
+
+    taskList.appendChild(li);
+  });
 }
-
-// To Do
-function toggleTask() {}
-function deleteTask() {}
 
 // evento para el boton
 addBtn.addEventListener("click", addTask);
